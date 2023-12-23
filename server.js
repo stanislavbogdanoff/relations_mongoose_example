@@ -43,11 +43,9 @@ app.post("/drivers", async (req, res) => {
 });
 
 app.get("/drivers", async (req, res) => {
-  const driver = await Driver.findOne({ _id: "6581a82159ca39d652adb554" });
-
-  const car = await Car.findOne({ _id: driver.car });
-
-  driver.car = car;
+  const driver = await Driver.findOne({
+    _id: "6581a82159ca39d652adb554",
+  }).populate("car");
 
   res.status(200).json(driver);
 });
@@ -104,11 +102,9 @@ app.post("/posts", async (req, res) => {
 });
 
 app.get("/posts", async (req, res) => {
-  const post = await Post.findById("6581b1bf4034071fce2d353e");
-
-  const commentsArray = await Comment.find({ post: post._id });
-
-  post.comments = commentsArray;
+  const post = await Post.findById("6581b6d4218aefc8053c4396").populate(
+    "comments"
+  );
 
   res.status(200).json(post);
 });

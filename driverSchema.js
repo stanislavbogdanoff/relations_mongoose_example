@@ -21,8 +21,6 @@ const driverSchema = new mongoose.Schema(
   }
 );
 
-// car_drivers
-
 const Driver = mongoose.model("Driver", driverSchema);
 
 module.exports = { Car, Driver };
