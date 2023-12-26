@@ -1,54 +1,31 @@
 const express = require("express");
-const mongoose = require("mongoose");
-const { Publisher, Game } = require("./gameSchema");
-const { Car, Driver } = require("./driverSchema");
-const { Passport, Human } = require("./passportSchema");
-const { Post, Comment } = require("./postSchema");
+const dotenv = require("dotenv");
+dotenv.config();
 const app = express();
+const { Passport, Human } = require("./models/passportSchema");
+const { Post, Comment } = require("./models/postSchema");
+const { connectDb } = require("./config/connectDb");
 
-const mongoUri =
-  "mongodb+srv://admin:admin@cluster0.gvrgdak.mongodb.net/lesson_db?retryWrites=true&w=majority";
+// Импорт контроллеров
+const { successController } = require("./controllers/successController");
+const { createGame } = require("./controllers/gamesController");
 
-mongoose.connect(mongoUri).then(() => console.log("Connected to MongoDB"));
+// Вызов функции подключения к MongoDB`
+connectDb();
 
-app.get("/", (req, res) => {
-  res.status(200).json("Succcess");
-});
+// Для автосчитывания тел запросов в формате JSON
+app.use(express.json());
 
-app.post("/games", async (req, res) => {
-  const newPublisher = new Publisher({
-    companyName: "Ubisoft",
-    website: "ubisoft.com",
-  });
+// Использование переменной среды для номера порта
+const port = process.env.PORT;
 
-  const newGame = new Game({ title: "Far Cry 19", publisher: newPublisher });
+// Эндпоинты
+app.get("/", successController);
 
-  const result = await newGame.save();
+app.post("/games", createGame);
 
-  res.status(201).json(result);
-});
-
-app.post("/drivers", async (req, res) => {
-  const car = await Car.create({
-    model: "Toyota Camry",
-    producer: "Toyota",
-  });
-
-  const driver = await Driver.create({
-    name: "Johnny Sack",
-    car: car._id,
-  });
-
-  res.status(201).json(driver);
-});
-
-app.get("/drivers", async (req, res) => {
-  const driver = await Driver.findOne({
-    _id: "6581a82159ca39d652adb554",
-  }).populate("car");
-
-  res.status(200).json(driver);
-});
+// Импорт маршртуизатора для машин/водителей
+app.use("/drivers", require("./routes/carsRoutes"));
 
 app.post("/passports", async (req, res) => {
   // создаем "паспорт без человека"
@@ -109,4 +86,4 @@ app.get("/posts", async (req, res) => {
   res.status(200).json(post);
 });
 
-app.listen(5000, () => console.log("Server is running on port 5000"));
+app.listen(port, () => console.log(`Server is running on port ${port}`));
